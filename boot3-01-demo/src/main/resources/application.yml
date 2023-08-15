@@ -1,0 +1,24 @@
+person:
+  name: 蔡秋凤
+  age:  44
+  birthDay: 2023/8/7 11:11:11
+  like: true
+  child:
+    name: 蔡烂得
+    age:  23
+    birthDay: 2010/9/1
+    text:
+      - 全家福
+      - 一剪梅
+  dogs:
+    - name: 乌云
+      age:  3
+    - name: 大地
+      age:  4
+  cats:
+    c1:
+      name: 黑虎
+      age:  8
+    c2:
+      name: 麻叶
+      age:  7

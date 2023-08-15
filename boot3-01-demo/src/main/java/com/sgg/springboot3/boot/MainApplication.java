@@ -1,7 +1,9 @@
 package com.sgg.springboot3.boot;
 
+import com.sgg.springboot3.boot.bean.Person;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * ClassName: MainApplication
@@ -16,6 +18,9 @@ public class MainApplication {
 
     public static void main(String[] args) {
 
-        SpringApplication.run(MainApplication.class);
+        ConfigurableApplicationContext ioc = SpringApplication.run(MainApplication.class);
+
+        Person person = ioc.getBean(Person.class);
+        System.out.println("person = " + person);
     }
 }

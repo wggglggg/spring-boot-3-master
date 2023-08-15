@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/boot3-04-web/boot3-04-web.iml" filepath="$PROJECT_DIR$/boot3-04-web/boot3-04-web.iml" />
       <module fileurl="file://$PROJECT_DIR$/spring-boot-3-master.iml" filepath="$PROJECT_DIR$/spring-boot-3-master.iml" />
     </modules>
   </component>
