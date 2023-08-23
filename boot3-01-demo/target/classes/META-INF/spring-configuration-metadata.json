@@ -1,0 +1,47 @@
+{
+  "groups": [
+    {
+      "name": "person",
+      "type": "com.sgg.springboot3.boot.bean.Person",
+      "sourceType": "com.sgg.springboot3.boot.bean.Person"
+    }
+  ],
+  "properties": [
+    {
+      "name": "person.age",
+      "type": "java.lang.Integer",
+      "sourceType": "com.sgg.springboot3.boot.bean.Person"
+    },
+    {
+      "name": "person.birth-day",
+      "type": "java.util.Date",
+      "sourceType": "com.sgg.springboot3.boot.bean.Person"
+    },
+    {
+      "name": "person.cats",
+      "type": "java.util.Map<java.lang.String,com.sgg.springboot3.boot.bean.Cat>",
+      "sourceType": "com.sgg.springboot3.boot.bean.Person"
+    },
+    {
+      "name": "person.child",
+      "type": "com.sgg.springboot3.boot.bean.Child",
+      "sourceType": "com.sgg.springboot3.boot.bean.Person"
+    },
+    {
+      "name": "person.dogs",
+      "type": "java.util.List<com.sgg.springboot3.boot.bean.Dog>",
+      "sourceType": "com.sgg.springboot3.boot.bean.Person"
+    },
+    {
+      "name": "person.like",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.sgg.springboot3.boot.bean.Person"
+    },
+    {
+      "name": "person.name",
+      "type": "java.lang.String",
+      "sourceType": "com.sgg.springboot3.boot.bean.Person"
+    }
+  ],
+  "hints": []
+}

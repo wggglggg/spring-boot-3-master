@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sgg.springboot3.boot.mapper.UserMapper">
+
+
+    <!--接口的全类名和namespace的值是一一对应的
+    select id,login_name loginName,nick_name nickName,passwd from t_user where id=#{id}
+    -->
+
+    <!--User getUserById(@Param("id") Integer id);-->
+    <select id="getUserById" resultType="com.sgg.springboot3.boot.bean.User">
+        select * from t_user where id=#{id}
+    </select>
+</mapper>

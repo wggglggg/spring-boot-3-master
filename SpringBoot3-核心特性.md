@@ -858,6 +858,8 @@ log4j2支持yaml和json格式的配置文件
 3. 如需对接**专业日志系统**，也只需要把 logback 记录的**日志**灌倒 **kafka**之类的中间件，这和SpringBoot没关系，都是日志框架自己的配置，**修改配置文件即可**
 4. **业务中使用slf4j-api记录日志。不要再 sout 了**
 
+------
+
 
 
 ## **2、SpringBoot3-Web开发**
@@ -1907,7 +1909,692 @@ ModelAndView modelAndView = resolveErrorView(request, response, status, model);
 return (modelAndView != null) ? modelAndView : new ModelAndView("error", model);
 ```
 
+容器中专门有一个错误视图解析器
 
+```java
+@Bean
+@ConditionalOnBean(DispatcherServlet.class)
+@ConditionalOnMissingBean(ErrorViewResolver.class)
+DefaultErrorViewResolver conventionErrorViewResolver() {
+    return new DefaultErrorViewResolver(this.applicationContext, this.resources);
+}
+```
+
+SpringBoot解析自定义错误页的默认规则
+
+```java
+	@Override
+	public ModelAndView resolveErrorView(HttpServletRequest request, HttpStatus status, Map<String, Object> model) {
+		ModelAndView modelAndView = resolve(String.valueOf(status.value()), model);
+		if (modelAndView == null && SERIES_VIEWS.containsKey(status.series())) {
+			modelAndView = resolve(SERIES_VIEWS.get(status.series()), model);
+		}
+		return modelAndView;
+	}
+
+	private ModelAndView resolve(String viewName, Map<String, Object> model) {
+		String errorViewName = "error/" + viewName;
+		TemplateAvailabilityProvider provider = this.templateAvailabilityProviders.getProvider(errorViewName,
+				this.applicationContext);
+		if (provider != null) {
+			return new ModelAndView(errorViewName, model);
+		}
+		return resolveResource(errorViewName, model);
+	}
+
+	private ModelAndView resolveResource(String viewName, Map<String, Object> model) {
+		for (String location : this.resources.getStaticLocations()) {
+			try {
+				Resource resource = this.applicationContext.getResource(location);
+				resource = resource.createRelative(viewName + ".html");
+				if (resource.exists()) {
+					return new ModelAndView(new HtmlResourceView(resource), model);
+				}
+			}
+			catch (Exception ex) {
+			}
+		}
+		return null;
+	}
+```
+
+容器中有一个默认的名为error的view; 提供了默认白页功能
+
+```java
+@Bean(name = "error")
+@ConditionalOnMissingBean(name = "error")
+public View defaultErrorView() {
+    return this.defaultErrorView;
+}
+```
+
+封装了JSON格式的错误信息
+
+```java
+	@Bean
+	@ConditionalOnMissingBean(value = ErrorAttributes.class, search = SearchStrategy.CURRENT)
+	public DefaultErrorAttributes errorAttributes() {
+		return new DefaultErrorAttributes();
+	}
+```
+
+规则：
+
+1. **解析一个错误页**
+
+1. 1. 如果发生了500、404、503、403 这些错误
+
+1. 1. 1. 如果有**模板引擎**，默认在 `classpath:/templates/error/**精确码.html**`
+      2. 如果没有模板引擎，在静态资源文件夹下找  `**精确码.html**`
+
+1. 2. 如果匹配不到`精确码.html`这些精确的错误页，就去找`5xx.html`，`4xx.html`**模糊匹配**
+
+1. 1. 1. 如果有模板引擎，默认在 `classpath:/templates/error/5xx.html`
+      2. 如果没有模板引擎，在静态资源文件夹下找  `5xx.html`
+
+2. 如果模板引擎路径`templates`下有 `error.html`页面，就直接渲染
+
+#### 2. 自定义错误响应
+
+##### 1. 自定义json响应
+
+> 使用@ControllerAdvice + @ExceptionHandler进行统一异常处理
+>
+> @ExceptionHandler标识一个方法处理错误，默认只能处理这个类发生的指定错误
+
+##### 2. 自定义页面响应
+
+> 根据boot的错误页面规则，自定义页面模板
+
+##### 3. 最佳实战
+
+- **前后分离**
+
+- - 后台发生的所有错误，`@ControllerAdvice + @ExceptionHandler`进行统一异常处理。
+
+- **服务端页面渲染**
+
+- - **不可预知的一些，HTTP码表示的服务器或客户端错误**
+
+- - - 给`classpath:/templates/error/`下面，放常用精确的错误码页面。`500.html`，`404.html`
+    - 给`classpath:/templates/error/`下面，放通用模糊匹配的错误码页面。 `5xx.html`，`4xx.html`
+
+- - **发生业务错误**
+
+- - - **核心业务**，每一种错误，都应该代码控制，**跳转到自己定制的错误页**。
+    - **通用业务**，`classpath:/templates/error.html`页面，**显示错误信息**。
+
+
+
+页面，JSON，可用的Model数据如下
+
+![image.png](https://cdn.nlark.com/yuque/0/2023/png/1613913/1681724501227-077073b7-349d-414f-8916-a822eb86c772.png?x-oss-process=image%2Fwatermark%2Ctype_d3F5LW1pY3JvaGVp%2Csize_26%2Ctext_5bCa56GF6LC3IGF0Z3VpZ3UuY29t%2Ccolor_FFFFFF%2Cshadow_50%2Ct_80%2Cg_se%2Cx_10%2Cy_10)
+
+### 8. 嵌入式容器
+
+> Servlet容器：管理、运行Servlet组件（Servlet、Filter、Listener）的环境，一般指服务器
+
+#### 1. 自动配置原理
+
+> SpringBoot 默认嵌入Tomcat作为Servlet容器。
+> ●自动配置类是ServletWebServerFactoryAutoConfiguration，EmbeddedWebServerFactoryCustomizerAutoConfiguration
+> ●自动配置类开始分析功能。`xxxxAutoConfiguration`
+
+```java
+@AutoConfiguration
+@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
+@ConditionalOnClass(ServletRequest.class)
+@ConditionalOnWebApplication(type = Type.SERVLET)
+@EnableConfigurationProperties(ServerProperties.class)
+@Import({ ServletWebServerFactoryAutoConfiguration.BeanPostProcessorsRegistrar.class,
+		ServletWebServerFactoryConfiguration.EmbeddedTomcat.class,
+		ServletWebServerFactoryConfiguration.EmbeddedJetty.class,
+		ServletWebServerFactoryConfiguration.EmbeddedUndertow.class })
+public class ServletWebServerFactoryAutoConfiguration {
+    
+}
+```
+
+1. ServletWebServerFactoryAutoConfiguration 自动配置了嵌入式容器场景
+2. 绑定了ServerProperties配置类，所有和服务器有关的配置 server
+3. ServletWebServerFactoryAutoConfiguration 导入了 嵌入式的三大服务器 Tomcat、Jetty、Undertow
+     a. 导入 Tomcat、Jetty、Undertow 都有条件注解。系统中有这个类才行（也就是导了包）
+       b. 默认  Tomcat配置生效。给容器中放 TomcatServletWebServerFactory
+       c. 都给容器中 ServletWebServerFactory放了一个 web服务器工厂（造web服务器的）
+       d. web服务器工厂 都有一个功能，getWebServer获取web服务器
+       e. TomcatServletWebServerFactory 创建了 tomcat。
+4. ServletWebServerFactory 什么时候会创建 webServer出来。
+5. ServletWebServerApplicationContextioc容器，启动的时候会调用创建web服务器
+6. Spring容器刷新（启动）的时候，会预留一个时机，刷新子容器。onRefresh()
+7. refresh() 容器刷新 十二大步的刷新子容器会调用 onRefresh()；
+
+```java
+	@Override
+	protected void onRefresh() {
+		super.onRefresh();
+		try {
+			createWebServer();
+		}
+		catch (Throwable ex) {
+			throw new ApplicationContextException("Unable to start web server", ex);
+		}
+	}
+```
+
+> Web场景的Spring容器启动，在onRefresh的时候，会调用创建web服务器的方法。
+>
+> Web服务器的创建是通过WebServerFactory搞定的。容器中又会根据导了什么包条件注解，启动相关的 服务器配置，默认`EmbeddedTomcat`会给容器中放一个 `TomcatServletWebServerFactory`，导致项目启动，自动创建出Tomcat。
+
+#### 2. 自定义
+
+![image.png](https://cdn.nlark.com/yuque/0/2023/png/1613913/1681725850466-2ecf12f4-8b66-469f-9d5d-377a33923b3c.png?x-oss-process=image%2Fwatermark%2Ctype_d3F5LW1pY3JvaGVp%2Csize_19%2Ctext_5bCa56GF6LC3IGF0Z3VpZ3UuY29t%2Ccolor_FFFFFF%2Cshadow_50%2Ct_80%2Cg_se%2Cx_10%2Cy_10)
+
+> 切换 其它几种服务器；
+>
+> ```xml
+> <properties>
+>     <servlet-api.version>3.1.0</servlet-api.version>
+> </properties>
+> <dependency>
+>     <groupId>org.springframework.boot</groupId>
+>     <artifactId>spring-boot-starter-web</artifactId>
+>     <exclusions>
+>         <!-- Exclude the Tomcat dependency禁用掉tomcat -->
+>         <exclusion>
+>             <groupId>org.springframework.boot</groupId>
+>             <artifactId>spring-boot-starter-tomcat</artifactId>
+>         </exclusion>
+>     </exclusions>
+> </dependency>
+> <!-- Use Jetty instead 使用jetty服务器 -->
+> <dependency>
+>     <groupId>org.springframework.boot</groupId>
+>     <artifactId>spring-boot-starter-jetty</artifactId>
+> </dependency>
+> ```
+>
+> 
+
+#### 3. 最佳实践
+
+**用法：**
+
+- 修改`server`下的相关配置就可以修改**服务器参数**
+- 通过给容器中放一个`**ServletWebServerFactory**`，来禁用掉SpringBoot默认放的服务器工厂，实现自定义嵌入**任意服务器**
+
+### 9. 全面接管SpringMVC
+
+> - SpringBoot 默认配置好了 SpringMVC 的所有常用特性。
+> - 如果我们需要全面接管SpringMVC的所有配置并**禁用默认配置**，仅需要编写一个`WebMvcConfigurer`配置类，并标注 `@EnableWebMvc` 即可
+> - 全手动模式
+>
+> - - `@EnableWebMvc` : 禁用默认配置
+>   - `**WebMvcConfigurer**`组件：定义MVC的底层行为
+
+#### 1. WebMvcAutoConfiguration 到底自动配置了哪些规则
+
+> SpringMVC自动配置场景给我们配置了如下所有默认行为
+
+1. `WebMvcAutoConfiguration`web场景的自动配置类
+
+1. 1. 支持RESTful的filter：HiddenHttpMethodFilter
+   2. 支持非POST请求，请求体携带数据：FormContentFilter
+   3. 导入`**EnableWebMvcConfiguration**`：
+
+1. 1. 1. `RequestMappingHandlerAdapter`
+      2. `WelcomePageHandlerMapping`： **欢迎页功能**支持（模板引擎目录、静态资源目录放index.html），项目访问/ 就默认展示这个页面.
+      3. `RequestMappingHandlerMapping`：找每个请求由谁处理的映射关系
+      4. `ExceptionHandlerExceptionResolver`：默认的异常解析器 
+      5. `LocaleResolver`：国际化解析器
+      6. `ThemeResolver`：主题解析器
+      7. `FlashMapManager`：临时数据共享
+      8. `FormattingConversionService`： 数据格式化 、类型转化
+      9. `Validator`： 数据校验`JSR303`提供的数据校验功能
+      10. `WebBindingInitializer`：请求参数的封装与绑定
+      11. `ContentNegotiationManager`：内容协商管理器
+
+1. 4. `**WebMvcAutoConfigurationAdapter**`配置生效，它是一个`WebMvcConfigurer`，定义mvc底层组件
+
+1. 1. 1. 定义好 `WebMvcConfigurer` **底层组件默认功能；所有功能详见列表**
+      2. 视图解析器：`InternalResourceViewResolver`
+      3. 视图解析器：`BeanNameViewResolver`,**视图名（controller方法的返回值字符串）**就是组件名
+      4. 内容协商解析器：`ContentNegotiatingViewResolver`
+      5. 请求上下文过滤器：`RequestContextFilter`: 任意位置直接获取当前请求
+      6. 静态资源链规则
+      7. `ProblemDetailsExceptionHandler`：错误详情
+
+1. 1. 1. 1. SpringMVC内部场景异常被它捕获：
+
+1. 5. 定义了MVC默认的底层行为: `WebMvcConfigurer`
+
+#### 2. @EnableWebMvc 禁用默认行为.
+
+1. `@EnableWebMvc`给容器中导入 `DelegatingWebMvcConfiguration`组件，
+
+​        他是 `WebMvcConfigurationSupport`
+
+2. `WebMvcAutoConfiguration`有一个核心的条件注解, `@ConditionalOnMissingBean(WebMvcConfigurationSupport.class)`，容器中没有`WebMvcConfigurationSupport`，`WebMvcAutoConfiguration`才生效.
+
+3. @EnableWebMvc 导入 `WebMvcConfigurationSupport` 导致 `WebMvcAutoConfiguration` 失效。导致禁用了默认行为
+
+> ● @EnableWebMVC 禁用了 Mvc的自动配置
+> ● WebMvcConfigurer 定义SpringMVC底层组件的功能类
+
+2. WebMvcConfigurer 功能
+
+> 定义扩展SpringMVC底层功能
+
+ 
+
+| FormatterRegistry                  | addFormatters                         | 格式化器：支持属性上@NumberFormat和@DatetimeFormat的数据类型转换 | GenericConversionService                                     |
+| ---------------------------------- | ------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 无                                 | getValidator                          | 数据校验：校验 Controller 上使用@Valid标注的参数合法性。需要导入starter-validator | 无                                                           |
+| InterceptorRegistry                | addInterceptors                       | 拦截器：拦截收到的所有请求                                   | 无                                                           |
+| ContentNegotiationConfigurer       | configureContentNegotiation           | 内容协商：支持多种数据格式返回。需要配合支持这种类型的HttpMessageConverter | 支持 json                                                    |
+| configureMessageConverters         | List<HttpMessageConverter<?>>         | 消息转换器：标注@ResponseBody的返回值会利用MessageConverter直接写出去 | 8 个，支持byte，string,multipart,resource，json              |
+| addViewControllers                 | ViewControllerRegistry                | 视图映射：直接将请求路径与物理视图映射。用于无 java 业务逻辑的直接视图页渲染 | 无<br/><mvc:view-controller                                  |
+| configureViewResolvers             | ViewResolverRegistry                  | 视图解析器：逻辑视图转为物理视图                             | ViewResolverComposite                                        |
+| addResourceHandlers                | ResourceHandlerRegistry               | 静态资源处理：静态资源路径映射、缓存控制                     | ResourceHandlerRegistry                                      |
+| configureDefaultServletHandling    | DefaultServletHandlerConfigurer       | 默认 Servlet：可以覆盖 Tomcat 的DefaultServlet。让DispatcherServlet拦截/ | 无                                                           |
+| configurePathMatch                 | PathMatchConfigurer                   | 路径匹配：自定义 URL 路径匹配。可以自动为所有路径加上指定前缀，比如 /api | 无                                                           |
+| configureAsyncSupport              | AsyncSupportConfigurer                | 异步支持                                                     | TaskExecutionAutoConfiguration                               |
+| addCorsMappings                    | CorsRegistry                          | 跨域：                                                       | 无                                                           |
+| addArgumentResolvers               | List<HandlerMethodArgumentResolver>   | 参数解析器：                                                 | mvc 默认提供                                                 |
+| addReturnValueHandlers             | List<HandlerMethodReturnValueHandler> | 返回值解析器：                                               | mvc 默认提供                                                 |
+| configureHandlerExceptionResolvers | List<HandlerExceptionResolver>        | 异常处理器：                                                 | 默认 3 个ExceptionHandlerExceptionResolver
+ResponseStatusExceptionResolver
+DefaultHandlerExceptionResolver |
+| getMessageCodesResolver            | 无                                    | 消息码解析器：国际化使用                                     | 无                                                           |
+|                                    |                                       |                                                              |                                                              |
+|                                    |                                       |                                                              |                                                              |
+|                                    |                                       |                                                              |                                                              |
+|                                    |                                       |                                                              |                                                              |
+
+### 10. 最佳实践
+
+> SpringBoot 已经默认配置好了Web开发场景常用功能。我们直接使用即可。
+
+三种方式	
+
+| 方式     | 用法                                                         |                            | 效果                                            |
+| -------- | ------------------------------------------------------------ | -------------------------- | ----------------------------------------------- |
+| 全自动   | 直接编写控制器逻辑                                           |                            | 全部使用自动配置默认效果                        |
+| 手自一体 | @Configuration + <br/> 配置WebMvcConfigurer+
+配置 WebMvcRegistrations | 不要标注<br/>@EnableWebMvc | 保留自动配置效果手动设置部分功能
+定义MVC底层组件 |
+| 全手动   | @Configuration + <br/> 配置WebMvcConfigurer                  | 标注<br/>@EnableWebMvc     | 禁用自动配置效果<br/>全手动设置                 |
+
+总结：
+
+**给容器中写一个配置类**`**@Configuration**`**实现** `**WebMvcConfigurer**`**但是不要标注** `**@EnableWebMvc**`**注解，实现手自一体的效果。**
+
+#### 两种模式
+
+1、`前后分离模式`： `@RestController `响应JSON数据
+
+2、`前后不分离模式`：@Controller + Thymeleaf模板引擎
+
+### 11. Web新特性
+
+#### 1. Problemdetails
+
+> RFC 7807: <https://www.rfc-editor.org/rfc/rfc7807>
+>
+> **错误信息**返回新格式
+
+原理
+
+```java
+@Configuration(proxyBeanMethods = false)
+//配置过一个属性 spring.mvc.problemdetails.enabled=true
+@ConditionalOnProperty(prefix = "spring.mvc.problemdetails", name = "enabled", havingValue = "true")
+static class ProblemDetailsErrorHandlingConfiguration {
+
+    @Bean
+    @ConditionalOnMissingBean(ResponseEntityExceptionHandler.class)
+    ProblemDetailsExceptionHandler problemDetailsExceptionHandler() {
+        return new ProblemDetailsExceptionHandler();
+    }
+}
+```
+
+1. ProblemDetailsExceptionHandler 是一个 @ControllerAdvice集中处理系统异常
+2. 处理以下异常。如果系统出现以下异常，会被SpringBoot支持以 RFC 7807规范方式返回错误数据
+
+```java
+	@ExceptionHandler({
+			HttpRequestMethodNotSupportedException.class, //请求方式不支持
+			HttpMediaTypeNotSupportedException.class,
+			HttpMediaTypeNotAcceptableException.class,
+			MissingPathVariableException.class,
+			MissingServletRequestParameterException.class,
+			MissingServletRequestPartException.class,
+			ServletRequestBindingException.class,
+			MethodArgumentNotValidException.class,
+			NoHandlerFoundException.class,
+			AsyncRequestTimeoutException.class,
+			ErrorResponseException.class,
+			ConversionNotSupportedException.class,
+			TypeMismatchException.class,
+			HttpMessageNotReadableException.class,
+			HttpMessageNotWritableException.class,
+			BindException.class
+		})
+```
+
+> 效果：
+
+默认响应错误的json。状态码 405
+
+```JSON
+{
+    "timestamp": "2023-04-18T11:13:05.515+00:00",
+    "status": 405,
+    "error": "Method Not Allowed",
+    "trace": "org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'POST' is not supported\r\n\tat org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping.handleNoMatch(RequestMappingInfoHandlerMapping.java:265)\r\n\tat org.springframework.web.servlet.handler.AbstractHandlerMethodMapping.lookupHandlerMethod(AbstractHandlerMethodMapping.java:441)\r\n\tat org.springframework.web.servlet.handler.AbstractHandlerMethodMapping.getHandlerInternal(AbstractHandlerMethodMapping.java:382)\r\n\tat org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping.getHandlerInternal(RequestMappingInfoHandlerMapping.java:126)\r\n\tat org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping.getHandlerInternal(RequestMappingInfoHandlerMapping.java:68)\r\n\tat org.springframework.web.servlet.handler.AbstractHandlerMapping.getHandler(AbstractHandlerMapping.java:505)\r\n\tat org.springframework.web.servlet.DispatcherServlet.getHandler(DispatcherServlet.java:1275)\r\n\tat org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1057)\r\n\tat org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:974)\r\n\tat org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1011)\r\n\tat org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914)\r\n\tat jakarta.servlet.http.HttpServlet.service(HttpServlet.java:563)\r\n\tat org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)\r\n\tat jakarta.servlet.http.HttpServlet.service(HttpServlet.java:631)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:205)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)\r\n\tat org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:53)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)\r\n\tat org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)\r\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)\r\n\tat org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)\r\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)\r\n\tat org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)\r\n\tat org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174)\r\n\tat org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)\r\n\tat org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:166)\r\n\tat org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)\r\n\tat org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:493)\r\n\tat org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)\r\n\tat org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)\r\n\tat org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)\r\n\tat org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:341)\r\n\tat org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:390)\r\n\tat org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)\r\n\tat org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:894)\r\n\tat org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1741)\r\n\tat org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)\r\n\tat org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1191)\r\n\tat org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)\r\n\tat org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61)\r\n\tat java.base/java.lang.Thread.run(Thread.java:833)\r\n",
+    "message": "Method 'POST' is not supported.",
+    "path": "/list"
+}
+```
+
+开启ProblemDetails返回, 使用新的MediaType
+
+###### problemdetails 默认为False
+
+spring.mvc.problemdetails.enabled=true
+
+Content-Type: application/problem+json+ 额外扩展返回
+
+![image.png](https://cdn.nlark.com/yuque/0/2023/png/1613913/1681816524680-e75cbe89-f90c-4ac4-8247-ec850308df65.png?x-oss-process=image%2Fwatermark%2Ctype_d3F5LW1pY3JvaGVp%2Csize_29%2Ctext_5bCa56GF6LC3IGF0Z3VpZ3UuY29t%2Ccolor_FFFFFF%2Cshadow_50%2Ct_80%2Cg_se%2Cx_10%2Cy_10)
+
+```JSON
+{
+    "type": "about:blank",
+    "title": "Method Not Allowed",
+    "status": 405,
+    "detail": "Method 'POST' is not supported.",
+    "instance": "/list"
+}
+```
+
+#### 2. 函数式Web
+
+> `SpringMVC 5.2` 以后 允许我们使用**函数式**的方式，**定义Web的请求处理流程**。
+>
+> 函数式接口
+>
+> Web请求处理的方式：
+>
+> 1. `@Controller + @RequestMapping`：**耦合式** （**路由**、**业务**耦合）
+> 2. **函数式Web**：分离式（路由、业务分离）
+
+##### 1. 场景
+
+> 场景：User RESTful - CRUD
+
+● GET /user/1  获取1号用户
+● GET /users   获取所有用户
+● POST /user  请求体携带JSON，新增一个用户
+● PUT /user/1 请求体携带JSON，修改1号用户
+● DELETE /user/1 删除1号用户
+
+##### 2. 核心类
+
+- **RouterFunction**
+- **RequestPredicate**
+- **ServerRequest**
+- **ServerResponse**
+
+##### 3. 示例
+
+```java
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
+import org.springframework.web.servlet.function.RequestPredicate;
+import org.springframework.web.servlet.function.RouterFunction;
+import org.springframework.web.servlet.function.ServerResponse;
+
+import static org.springframework.web.servlet.function.RequestPredicates.accept;
+import static org.springframework.web.servlet.function.RouterFunctions.route;
+
+@Configuration(proxyBeanMethods = false)
+public class MyRoutingConfiguration {
+
+    private static final RequestPredicate ACCEPT_JSON = accept(MediaType.APPLICATION_JSON);
+
+    @Bean
+    public RouterFunction<ServerResponse> routerFunction(MyUserHandler userHandler) {
+        return route()
+                .GET("/{user}", ACCEPT_JSON, userHandler::getUser)
+                .GET("/{user}/customers", ACCEPT_JSON, userHandler::getUserCustomers)
+                .DELETE("/{user}", ACCEPT_JSON, userHandler::deleteUser)
+                .build();
+    }
+}
+```
+
+
+
+```java
+import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.function.ServerRequest;
+import org.springframework.web.servlet.function.ServerResponse;
+
+@Component
+public class MyUserHandler {
+
+    public ServerResponse getUser(ServerRequest request) {
+        ...
+        return ServerResponse.ok().build();
+    }
+
+    public ServerResponse getUserCustomers(ServerRequest request) {
+        ...
+        return ServerResponse.ok().build();
+    }
+
+    public ServerResponse deleteUser(ServerRequest request) {
+        ...
+        return ServerResponse.ok().build();
+    }
+}
+```
+
+
+
+------
+
+## **3、SpringBoot3-数据访问**
+
+整合SSM场景
+
+> SpringBoot 整合 Spring、SpringMVC、MyBatis 进行数据访问场景开发
+
+### 1. 创建SSM整合项目
+
+```xml
+<!-- https://mvnrepository.com/artifact/org.mybatis.spring.boot/mybatis-spring-boot-starter -->
+<dependency>
+    <groupId>org.mybatis.spring.boot</groupId>
+    <artifactId>mybatis-spring-boot-starter</artifactId>
+    <version>3.0.1</version>
+</dependency>
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <scope>runtime</scope>
+</dependency>
+```
+
+### 2. 配置数据源
+
+```properties
+spring.datasource.url=jdbc:mysql://192.168.200.100:3306/demo
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.username=root
+spring.datasource.password=123456
+spring.datasource.type=com.zaxxer.hikari.HikariDataSource
+```
+
+安装MyBatisX 插件，帮我们生成Mapper接口的xml文件即可
+
+### 3. 配置MyBatis
+
+```properties
+#指定mapper映射文件位置
+mybatis.mapper-locations=classpath:/mapper/*.xml
+#参数项调整
+mybatis.configuration.map-underscore-to-camel-case=true
+```
+
+### 4. CRUD编写
+
+- 编写Bean
+- 编写Mapper
+- 使用`mybatisx`插件，快速生成MapperXML
+- 测试CRUD
+
+
+
+### 5. 自动配置原理
+
+**SSM整合总结：**
+
+> 1. **导入** `mybatis-spring-boot-starter`
+> 2. 配置**数据源**信息
+> 3. 配置mybatis的`**mapper接口扫描**`与`**xml映射文件扫描**`
+> 4. 编写bean，mapper，生成xml，编写sql 进行crud。**事务等操作依然和Spring中用法一样**
+> 5. 效果：
+>
+> 1. 1. 所有sql写在xml中
+>    2. 所有`mybatis配置`写在`application.properties`下面
+
+- `jdbc场景的自动配置`： 
+
+- - `mybatis-spring-boot-starter`导入 `spring-boot-starter-jdbc`，jdbc是操作数据库的场景
+  - `Jdbc`场景的几个自动配置
+
+- - - org.springframework.boot.autoconfigure.jdbc.**DataSourceAutoConfiguration**
+
+- - - - **数据源的自动配置**
+      - 所有和数据源有关的配置都绑定在`DataSourceProperties`
+      - 默认使用 `HikariDataSource`
+
+- - - org.springframework.boot.autoconfigure.jdbc.**JdbcTemplateAutoConfiguration**
+
+- - - - 给容器中放了`JdbcTemplate`操作数据库
+
+- - - org.springframework.boot.autoconfigure.jdbc.**JndiDataSourceAutoConfiguration**
+    - org.springframework.boot.autoconfigure.jdbc.**XADataSourceAutoConfiguration**
+
+- - - - **基于XA二阶提交协议的分布式事务数据源**
+
+- - - org.springframework.boot.autoconfigure.jdbc.**DataSourceTransactionManagerAutoConfiguration**
+
+- - - - **支持事务**
+
+- - **具有的底层能力：数据源、**`JdbcTemplate`、**事务**
+
+
+
+
+
+- `MyBatisAutoConfiguration`：配置了MyBatis的整合流程
+
+- - `mybatis-spring-boot-starter`导入 `mybatis-spring-boot-autoconfigure（mybatis的自动配置包）`，
+  - 默认加载两个自动配置类：
+
+- - - org.mybatis.spring.boot.autoconfigure.MybatisLanguageDriverAutoConfiguration
+    - org.mybatis.spring.boot.autoconfigure.**MybatisAutoConfiguration**
+
+- - - - **必须在数据源配置好之后才配置**
+      - 给容器中`SqlSessionFactory`组件。创建和数据库的一次会话
+      - 给容器中`SqlSessionTemplate`组件。操作数据库
+
+- - **MyBatis的所有配置绑定在**`MybatisProperties`
+  - 每个**Mapper接口**的**代理对象**是怎么创建放到容器中。详见**@MapperScan**原理：
+
+- - - 利用`@Import(MapperScannerRegistrar.class)`批量给容器中注册组件。解析指定的包路径里面的每一个类，为每一个Mapper接口类，创建Bean定义信息，注册到容器中。
+
+> 如何分析哪个场景导入以后，开启了哪些自动配置类。
+>
+> 找：`classpath:/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`文件中配置的所有值，就是要开启的自动配置类，但是每个类可能有条件注解，基于条件注解判断哪个自动配置类生效了。
+
+### 6. 快速定位生效的配置 
+
+```properties
+#开启调试模式，详细打印开启了哪些自动配置
+debug=true
+# Positive（生效的自动配置）  Negative（不生效的自动配置）
+```
+
+### 7. 扩展：整合其他数据源
+
+#### 1. Druid 数据源
+
+> 暂不支持 `SpringBoot3`
+>
+> - 导入`druid-starter`
+> - 写配置
+> - 分析自动配置了哪些东西，怎么用
+
+Druid官网：<https://github.com/alibaba/druid>
+
+```properties
+#数据源基本配置
+spring.datasource.url=jdbc:mysql://192.168.200.100:3306/demo
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.username=root
+spring.datasource.password=123456
+spring.datasource.type=com.alibaba.druid.pool.DruidDataSource
+
+# 配置StatFilter监控
+spring.datasource.druid.filter.stat.enabled=true
+spring.datasource.druid.filter.stat.db-type=mysql
+spring.datasource.druid.filter.stat.log-slow-sql=true
+spring.datasource.druid.filter.stat.slow-sql-millis=2000
+# 配置WallFilter防火墙
+spring.datasource.druid.filter.wall.enabled=true
+spring.datasource.druid.filter.wall.db-type=mysql
+spring.datasource.druid.filter.wall.config.delete-allow=false
+spring.datasource.druid.filter.wall.config.drop-table-allow=false
+# 配置监控页，内置监控页面的首页是 /druid/index.html
+spring.datasource.druid.stat-view-servlet.enabled=true
+spring.datasource.druid.stat-view-servlet.login-username=admin
+spring.datasource.druid.stat-view-servlet.login-password=admin
+spring.datasource.druid.stat-view-servlet.allow=*
+
+# 其他 Filter 配置不再演示
+# 目前为以下 Filter 提供了配置支持，请参考文档或者根据IDE提示（spring.datasource.druid.filter.*）进行配置。
+# StatFilter
+# WallFilter
+# ConfigFilter
+# EncodingConvertFilter
+# Slf4jLogFilter
+# Log4jFilter
+# Log4j2Filter
+# CommonsLogFilter
+
+```
+
+#### 附录：示例数据库
+
+```sql
+CREATE TABLE `t_user`
+(
+    `id`         BIGINT(20)   NOT NULL AUTO_INCREMENT COMMENT '编号',
+    `login_name` VARCHAR(200) NULL DEFAULT NULL COMMENT '用户名称' COLLATE 'utf8_general_ci',
+    `nick_name`  VARCHAR(200) NULL DEFAULT NULL COMMENT '用户昵称' COLLATE 'utf8_general_ci',
+    `passwd`     VARCHAR(200) NULL DEFAULT NULL COMMENT '用户密码' COLLATE 'utf8_general_ci',
+    PRIMARY KEY (`id`)
+);
+insert into t_user(login_name, nick_name, passwd) VALUES ('zhangsan','张三','123456');
+```
+
+
+
+  
 
 
 

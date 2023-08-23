@@ -7,12 +7,15 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="boot3-06-features" />
         <module name="boot3-04-web" />
+        <module name="boot3-05-ssm" />
         <module name="boot3-03-logging" />
         <module name="boot3-02-demo" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="boot3-06-ssm2" target="17" />
       <module name="demo" target="17" />
       <module name="demo1" target="17" />
     </bytecodeTargetLevel>
@@ -23,6 +26,9 @@
       <module name="boot3-02-demo" options="-parameters" />
       <module name="boot3-03-logging" options="-parameters" />
       <module name="boot3-04-web" options="-parameters" />
+      <module name="boot3-05-ssm" options="-parameters" />
+      <module name="boot3-06-features" options="-parameters" />
+      <module name="boot3-06-ssm2" options="-parameters" />
       <module name="demo" options="-parameters" />
       <module name="demo1" options="-parameters" />
     </option>
