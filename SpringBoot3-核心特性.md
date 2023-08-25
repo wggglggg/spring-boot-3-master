@@ -2592,9 +2592,899 @@ CREATE TABLE `t_user`
 insert into t_user(login_name, nick_name, passwd) VALUES ('zhangsan','张三','123456');
 ```
 
+------
+
+## 4、SpringBoot3-基础特性
+
+### 1. SpringApplication
+
+#### 1.1. 自定义 banner
+
+1. 类路径添加banner.txt或设置spring.banner.location就可以定制 banner
+2. 推荐网站：[Spring Boot banner 在线生成工具，制作下载英文 banner.txt，修改替换 banner.txt 文字实现自定义，个性化启动 banner-bootschool.net](https://www.bootschool.net/ascii)
+
+#### 1.2. 自定义 SpringApplication
+
+```java
+import org.springframework.boot.Banner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class MyApplication {
+
+    public static void main(String[] args) {
+        SpringApplication application = new SpringApplication(MyApplication.class);
+        application.setBannerMode(Banner.Mode.OFF);
+        application.run(args);
+    }
+}
+```
+
+#### 1.3 FluentBuilder API  
+
+```java
+new SpringApplicationBuilder()
+    .sources(Parent.class)
+    .child(Application.class)
+    .bannerMode(Banner.Mode.OFF)
+    .run(args);
+```
+
+### 2. Profiles
+
+> 环境隔离能力；快速切换开发、测试、生产环境
+>
+> 步骤：
+>
+> 1. **标识环境**：指定哪些组件、配置在哪个环境生效
+> 2. **切换环境**：这个环境对应的所有组件和配置就应该生效
+
+#### 2.1. 使用
+
+##### 2.1.1 指定环境
+
+- Spring Profiles 提供一种**隔离配置**的方式，使其仅在**特定环境**生效；
+- 任何@Component, @Configuration 或 @ConfigurationProperties 可以使用 @Profile 标记，来指定何时被加载。【**容器中的组件**都可以被 `@Profile`标记】
 
 
-  
+
+##### 2.1.2 环境激活
+
+1. 配置激活指定环境； 配置文件
+
+```properties
+spring.profiles.active=production,hsqldb
+```
+
+2. 也可以使用命令行激活。--spring.profiles.active=dev,hsqldb
+
+3. 还可以配置**默认环境**； 不标注@Profile 的组件永远都存在。
+
+1. 1. 以前默认环境叫default
+   2. `spring.profiles.default=test`
+
+4. 推荐使用激活方式激活指定环境
+
+##### 2.1.3 环境包含
+
+注意：
+
+1. spring.profiles.active 和spring.profiles.default 只能用到 **无 profile 的文件**中，如果在application-dev.yaml中编写就是**无效的**
+2. 也可以额外添加生效文件，而不是激活替换。比如：
+
+```properties
+spring.profiles.include[0]=common
+spring.profiles.include[1]=local
+```
+
+最佳实战：
+
+- **生效的环境** = **激活的环境/默认环境**  + **包含的环境**
+- 项目里面这么用
+
+- - 基础的配置`mybatis`、`log`、`xxx`：写到**包含环境中**
+  - 需要动态切换变化的 `db`、`redis`：写到**激活的环境中**
+
+#### 2.2. Profile 分组
+
+创建prod组，指定包含db和mq配置
+
+```properties
+spring.profiles.group.prod[0]=db
+spring.profiles.group.prod[1]=mq
+```
+
+使用--spring.profiles.active=prod ，就会激活prod，db，mq配置文件
+
+#### 2.3. Profile 配置文件
+
+- `application-{profile}.properties`可以作为**指定环境的配置文件**。
+- 激活这个环境，**配置**就会生效。最终生效的所有**配置**是
+
+- - `application.properties`：主配置文件，任意时候都生效
+  - `application-{profile}.properties`：指定环境配置文件，激活指定环境生效
+
+profile优先级 > application 
+
+### 3. 外部化配置
+
+> **场景**：线上应用如何**快速修改配置**，并应**用最新配置**？
+>
+> - SpringBoot 使用  **配置优先级** + **外部配置**  简化配置更新、简化运维。
+> - 只需要给`jar`应用所在的文件夹放一个`application.properties`最新配置文件，重启项目就能自动应用最新配置
+
+
+
+#### 3.1. 配置优先级
+
+Spring Boot 允许将**配置外部化**，以便可以在不同的环境中使用相同的应用程序代码。
+
+我们可以使用各种**外部配置源**，包括Java Properties文件、YAML文件、环境变量和命令行参数。
+
+@Value可以获取值，也可以用@ConfigurationProperties将所有属性绑定到java object中
+
+**以下是 SpringBoot 属性源加载顺序。****后面的会覆盖前面的值**。由低到高，高优先级配置覆盖低优先级
+
+1. **默认属性**（通过`SpringApplication.setDefaultProperties`指定的）
+2. @PropertySource指定加载的配置（需要写在@Configuration类上才可生效）
+3. **配置文件（****application.properties/yml****等）**
+4. RandomValuePropertySource支持的random.*配置（如：@Value("${random.int}")）
+5. OS 环境变量
+6. Java 系统属性（System.getProperties()）
+7. JNDI 属性（来自java:comp/env）
+8. ServletContext 初始化参数
+9. ServletConfig 初始化参数
+10. SPRING_APPLICATION_JSON属性（内置在环境变量或系统属性中的 JSON）
+11. **命令行参数**
+12. 测试属性。(@SpringBootTest进行测试时指定的属性)
+13. 测试类@TestPropertySource注解
+14. Devtools 设置的全局属性。($HOME/.config/spring-boot)
+
+> 结论：配置可以写到很多位置，常见的优先级顺序：
+>
+> - `命令行`> `配置文件`> `springapplication配置`
+
+
+
+**配置文件优先级**如下：(**后面覆盖前面**)
+
+1. **jar 包内**的application.properties/yml
+2. **jar 包内**的application-{profile}.properties/yml
+3. **jar 包外**的application.properties/yml
+4. **jar 包外**的application-{profile}.properties/yml
+
+**建议**：**用一种格式的配置文件**。`**如果****.properties****和****.yml****同时存在,则****.properties****优先**`
+
+> 结论：`包外 > 包内`； 同级情况：`profile配置 > application配置`
+
+**所有参数均可由命令行传入，使用**`**--参数项=参数值**`**，将会被添加到环境变量中，并优先于**`**配置文件**`**。**
+
+**比如**`**java -jar app.jar --name="Spring"**`**,可以使用**`**@Value("${name}")**`**获取**
+
+
+
+演示场景：
+
+- 包内： application.properties   `server.port=8000`
+- 包内： application-dev.properties    `server.port=9000`
+- 包外：  application.properties   `server.port=8001`
+- 包外： application-dev.properties    `server.port=9001`
+
+启动端口？：命令行 > `9001` > `8001` > `9000` > `8000`
+
+
+
+#### 3.2. 外部配置
+
+SpringBoot 应用启动时会自动寻找application.properties和application.yaml位置，进行加载。顺序如下：（**后面覆盖前面**）
+
+1. 类路径: 内部
+
+1. 1. 类根路径
+   2. 类下/config包
+
+1. 当前路径（项目所在的位置）
+
+1. 1. 当前路径
+   2. 当前下/config子目录
+   3. /config目录的直接子目录
+
+
+
+
+
+最终效果：优先级由高到低，前面覆盖后面
+
+- 命令行 > 包外config直接子目录 > 包外config目录 > 包外根目录 > 包内目录
+- 同级比较： 
+
+- - profile配置 > 默认配置
+  - properties配置 > yaml配置
+
+![未命名绘图.svg](https://cdn.nlark.com/yuque/0/2023/svg/1613913/1682073869709-2cba18c8-55bd-4bf1-a9df-ac784e30d89a.svg)
+
+规律：最外层的最优先。
+
+- 命令行 > 所有
+- 包外 > 包内
+- config目录 > 根目录
+- profile > application 
+
+配置不同就都生效（互补），配置相同高优先级覆盖低优先级
+
+#### 3.3. 导入配置
+
+使用spring.config.import可以导入额外配置
+
+```properties
+spring.config.import=my.properties
+my.property=value
+```
+
+无论以上写法的先后顺序，my.properties的值总是优先于直接在文件中编写的my.property。
+
+#### 3.4. 属性占位符
+
+配置文件中可以使用 ${name:default}形式取出之前配置过的值
+
+```properties
+app.name=MyApp
+app.description=${app.name} is a Spring Boot application written by ${username:Unknown}
+```
+
+### 4. 单元测试-JUnit5
+
+#### 4.1. 整合
+
+SpringBoot 提供一系列测试工具集及注解方便我们进行测试。
+
+spring-boot-test提供核心测试能力，spring-boot-test-autoconfigure 提供测试的一些自动配置。
+
+我们只需要导入spring-boot-starter-test 即可整合测试
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-test</artifactId>
+    <scope>test</scope>
+</dependency>
+```
+
+spring-boot-starter-test 默认提供了以下库供我们测试使用
+
+- [JUnit 5](https://junit.org/junit5/)
+- [Spring Test](https://docs.spring.io/spring-framework/docs/6.0.4/reference/html/testing.html#integration-testing)
+- [AssertJ](https://assertj.github.io/doc/)
+- [Hamcrest](https://github.com/hamcrest/JavaHamcrest)
+- [Mockito](https://site.mockito.org/)
+- [JSONassert](https://github.com/skyscreamer/JSONassert)
+- [JsonPath](https://github.com/jayway/JsonPath)
+
+
+
+#### 4.2. 测试
+
+##### 4.2.0 组件测试
+
+直接`@Autowired`容器中的组件进行测试
+
+##### 4.2.1 注解
+
+JUnit5的注解与JUnit4的注解有所变化
+
+<https://junit.org/junit5/docs/current/user-guide/#writing-tests-annotations>
+
+- **@Test :**表示方法是测试方法。但是与JUnit4的@Test不同，他的职责非常单一不能声明任何属性，拓展的测试将会由Jupiter提供额外测试
+- **@ParameterizedTest :**表示方法是参数化测试，下方会有详细介绍
+- **@RepeatedTest :**表示方法可重复执行，下方会有详细介绍
+- **@DisplayName :**为测试类或者测试方法设置展示名称
+- **@BeforeEach :**表示在每个单元测试之前执行
+- **@AfterEach :**表示在每个单元测试之后执行
+- **@BeforeAll :**表示在所有单元测试之前执行
+- **@AfterAll :**表示在所有单元测试之后执行
+- **@Tag :**表示单元测试类别，类似于JUnit4中的@Categories
+- **@Disabled :**表示测试类或测试方法不执行，类似于JUnit4中的@Ignore
+- **@Timeout :**表示测试方法运行如果超过了指定时间将会返回错误
+- **@ExtendWith :**为测试类或测试方法提供扩展类引用
+
+```java
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+class StandardTests {
+
+    @BeforeAll
+    static void initAll() {
+    }
+
+    @BeforeEach
+    void init() {
+    }
+
+    @DisplayName("😱")
+    @Test
+    void succeedingTest() {
+    }
+
+    @Test
+    void failingTest() {
+        fail("a failing test");
+    }
+
+    @Test
+    @Disabled("for demonstration purposes")
+    void skippedTest() {
+        // not executed
+    }
+
+    @Test
+    void abortedTest() {
+        assumeTrue("abc".contains("Z"));
+        fail("test should have been aborted");
+    }
+
+    @AfterEach
+    void tearDown() {
+    }
+
+    @AfterAll
+    static void tearDownAll() {
+    }
+
+}
+```
+
+##### 4.2.2 断言
+
+| 方法              | 说明                                 |
+| ----------------- | ------------------------------------ |
+| assertEquals      | 判断两个对象或两个原始类型是否相等   |
+| assertNotEquals   | 判断两个对象或两个原始类型是否不相等 |
+| assertSame        | 判断两个对象引用是否指向同一个对象   |
+| assertNotSame     | 判断两个对象引用是否指向不同的对象   |
+| assertTrue        | 判断给定的布尔值是否为 true          |
+| assertFalse       | 判断给定的布尔值是否为 false         |
+| assertNull        | 判断给定的对象引用是否为 null        |
+| assertNotNull     | 判断给定的对象引用是否不为 null      |
+| assertArrayEquals | 数组断言                             |
+| assertAll         | 组合断言                             |
+| assertThrows      | 异常断言                             |
+| assertTimeout     | 超时断言                             |
+| fail              | 快速失败                             |
+
+##### 4.2.3 嵌套测试
+
+> JUnit 5 可以通过 Java 中的内部类和@Nested 注解实现嵌套测试，从而可以更好的把相关的测试方法组织在一起。在内部类中可以使用@BeforeEach 和@AfterEach 注解，而且嵌套的层次没有限制。
+
+```java
+@DisplayName("A stack")
+class TestingAStackDemo {
+
+    Stack<Object> stack;
+
+    @Test
+    @DisplayName("is instantiated with new Stack()")
+    void isInstantiatedWithNew() {
+        new Stack<>();
+    }
+
+    @Nested
+    @DisplayName("when new")
+    class WhenNew {
+
+        @BeforeEach
+        void createNewStack() {
+            stack = new Stack<>();
+        }
+
+        @Test
+        @DisplayName("is empty")
+        void isEmpty() {
+            assertTrue(stack.isEmpty());
+        }
+
+        @Test
+        @DisplayName("throws EmptyStackException when popped")
+        void throwsExceptionWhenPopped() {
+            assertThrows(EmptyStackException.class, stack::pop);
+        }
+
+        @Test
+        @DisplayName("throws EmptyStackException when peeked")
+        void throwsExceptionWhenPeeked() {
+            assertThrows(EmptyStackException.class, stack::peek);
+        }
+
+        @Nested
+        @DisplayName("after pushing an element")
+        class AfterPushing {
+
+            String anElement = "an element";
+
+            @BeforeEach
+            void pushAnElement() {
+                stack.push(anElement);
+            }
+
+            @Test
+            @DisplayName("it is no longer empty")
+            void isNotEmpty() {
+                assertFalse(stack.isEmpty());
+            }
+
+            @Test
+            @DisplayName("returns the element when popped and is empty")
+            void returnElementWhenPopped() {
+                assertEquals(anElement, stack.pop());
+                assertTrue(stack.isEmpty());
+            }
+
+            @Test
+            @DisplayName("returns the element when peeked but remains not empty")
+            void returnElementWhenPeeked() {
+                assertEquals(anElement, stack.peek());
+                assertFalse(stack.isEmpty());
+            }
+        }
+    }
+}
+```
+
+##### 4.2.4 参数化测试
+
+参数化测试是JUnit5很重要的一个新特性，它使得用不同的参数多次运行测试成为了可能，也为我们的单元测试带来许多便利。
+
+
+
+利用**@ValueSource**等注解，指定入参，我们将可以使用不同的参数进行多次单元测试，而不需要每新增一个参数就新增一个单元测试，省去了很多冗余代码。
+
+
+
+**@ValueSource**: 为参数化测试指定入参来源，支持八大基础类以及String类型,Class类型
+
+**@NullSource**: 表示为参数化测试提供一个null的入参
+
+**@EnumSource**: 表示为参数化测试提供一个枚举入参
+
+**@CsvFileSource**：表示读取指定CSV文件内容作为参数化测试入参
+
+**@MethodSource**：表示读取指定方法的返回值作为参数化测试入参(注意方法返回需要是一个流)
+
+```java
+@ParameterizedTest
+@ValueSource(strings = {"one", "two", "three"})
+@DisplayName("参数化测试1")
+public void parameterizedTest1(String string) {
+    System.out.println(string);
+    Assertions.assertTrue(StringUtils.isNotBlank(string));
+}
+
+
+@ParameterizedTest
+@MethodSource("method")    //指定方法名
+@DisplayName("方法来源参数")
+public void testWithExplicitLocalMethodSource(String name) {
+    System.out.println(name);
+    Assertions.assertNotNull(name);
+}
+
+static Stream<String> method() {
+    return Stream.of("apple", "banana");
+}
+```
+
+------
+
+## 5、SpringBoot3-核心原理
+
+### 1. 事件和监听器 
+
+#### 1. 生命周期监听 
+
+场景：监听应用的生命周期
+
+##### 1. 监听器-SpringApplicationRunListener 
+
+###### 1自定义SpringApplicationRunListener来监听事件；
+
+1.1编写SpringApplicationRunListener 实现类
+
+1.2在 META-INF/spring.factories 中配置 org.springframework.boot.SpringApplicationRunListener=自己的Listener，还可以指定一个有参构造器，接受两个参数(SpringApplication application, String[] args)
+
+1.3springboot 在spring-boot.jar中配置了默认的 Listener，如下
+
+![image.png](https://cdn.nlark.com/yuque/0/2023/png/1613913/1681829576654-d5e4b889-6fcf-4e65-91f1-8de8c78e98f1.png?x-oss-process=image%2Fwatermark%2Ctype_d3F5LW1pY3JvaGVp%2Csize_23%2Ctext_5bCa56GF6LC3IGF0Z3VpZ3UuY29t%2Ccolor_FFFFFF%2Cshadow_50%2Ct_80%2Cg_se%2Cx_10%2Cy_10)
+
+```java
+/**
+ * Listener先要从 META-INF/spring.factories 读到
+ *
+ * 1、引导： 利用 BootstrapContext 引导整个项目启动
+ *      starting：              应用开始，SpringApplication的run方法一调用，只要有了 BootstrapContext 就执行
+ *      environmentPrepared：   环境准备好（把启动参数等绑定到环境变量中），但是ioc还没有创建；【调一次】
+ * 2、启动：
+ *      contextPrepared：       ioc容器创建并准备好，但是sources（主配置类）没加载。并关闭引导上下文；组件都没创建  【调一次】
+ *      contextLoaded：         ioc容器加载。主配置类加载进去了。但是ioc容器还没刷新（我们的bean没创建）。
+ *      =======截止以前，ioc容器里面还没造bean呢=======
+ *      started：               ioc容器刷新了（所有bean造好了），但是 runner 没调用。
+ *      ready:                  ioc容器刷新了（所有bean造好了），所有 runner 调用完了。
+ * 3、运行
+ *     以前步骤都正确执行，代表容器running。
+ */
+```
+
+##### 2. 生命周期全流程
+
+![img](https://cdn.nlark.com/yuque/0/2023/png/1613913/1682322663331-25a89875-7ce3-40ae-9be7-9ea752fbab20.png?x-oss-process=image%2Fwatermark%2Ctype_d3F5LW1pY3JvaGVp%2Csize_31%2Ctext_5bCa56GF6LC3IGF0Z3VpZ3UuY29t%2Ccolor_FFFFFF%2Cshadow_50%2Ct_80%2Cg_se%2Cx_10%2Cy_10)
+
+#### 2. 事件触发时机
+
+##### 1. 各种回调监听器
+
+- `BootstrapRegistryInitializer`：    **感知特定阶段：**感知**引导初始化**
+
+- - `META-INF/spring.factories`
+  - 创建引导上下文`bootstrapContext`的时候触发。
+  - application.`addBootstrapRegistryInitializer`();
+  - 场景：`进行密钥校对授权。`
+
+- ApplicationContextInitializer：   **感知特定阶段：** 感知ioc容器初始化
+
+- - `META-INF/spring.factories`
+  - application.addInitializers();
+
+- **ApplicationListener：    感知全阶段：基于事件机制，感知事件。 一旦到了哪个阶段可以做别的事**
+
+- - `@Bean`或`@EventListener`： `事件驱动`
+  - `SpringApplication.addListeners(…)`或 `SpringApplicationBuilder.listeners(…)`
+  - `META-INF/spring.factories`
+
+- **SpringApplicationRunListener：       感知全阶段生命周期 + 各种阶段都能自定义操作； 功能更完善。**
+
+- - `META-INF/spring.factories`
+
+- **ApplicationRunner:          感知特定阶段：感知应用就绪Ready。卡死应用，就不会就绪**
+
+- - `@Bean`
+
+- **CommandLineRunner：   感知特定阶段：感知应用就绪Ready。卡死应用，就不会就绪**
+
+- - `@Bean`
+
+
+
+
+
+最佳实战：
+
+- 如果项目启动前做事： `BootstrapRegistryInitializer` 和 `ApplicationContextInitializer`
+- 如果想要在项目启动完成后做事：`**ApplicationRunner**`**和** `**CommandLineRunner**`
+- **如果要干涉生命周期做事：**`**SpringApplicationRunListener**`
+- **如果想要用事件机制：**`**ApplicationListener**`
+
+
+
+
+
+##### 2. 完整触发流程
+
+`**9大事件**`触发顺序&时机
+
+1. `ApplicationStartingEvent`：应用启动但未做任何事情, 除过注册listeners and initializers.
+2. `ApplicationEnvironmentPreparedEvent`：  Environment 准备好，但context 未创建.
+3. `ApplicationContextInitializedEvent`: ApplicationContext 准备好，ApplicationContextInitializers 调用，但是任何bean未加载
+4. `ApplicationPreparedEvent`： 容器刷新之前，bean定义信息加载
+5. `ApplicationStartedEvent`： 容器刷新完成， runner未调用
+
+=========以下就开始插入了**探针机制**============
+
+1. `AvailabilityChangeEvent`： `LivenessState.CORRECT`应用存活； **存活探针**
+2. `ApplicationReadyEvent`: 任何runner被调用
+3. `AvailabilityChangeEvent`：`ReadinessState.ACCEPTING_TRAFFIC`**就绪探针**，可以接请求
+4.  `ApplicationFailedEvent `：启动出错
+
+![img](https://cdn.nlark.com/yuque/0/2023/png/1613913/1682332243584-e7dd3527-b00f-4f65-a44c-19b88e0943fc.png?x-oss-process=image%2Fwatermark%2Ctype_d3F5LW1pY3JvaGVp%2Csize_32%2Ctext_5bCa56GF6LC3IGF0Z3VpZ3UuY29t%2Ccolor_FFFFFF%2Cshadow_50%2Ct_80%2Cg_se%2Cx_10%2Cy_10)
+
+
+
+应用事件发送顺序如下：
+
+![img](https://cdn.nlark.com/yuque/0/2023/png/1613913/1681829576515-f8e3e993-f696-4d9d-9cdd-76ba3ba396c3.png?x-oss-process=image%2Fwatermark%2Ctype_d3F5LW1pY3JvaGVp%2Csize_53%2Ctext_5bCa56GF6LC3IGF0Z3VpZ3UuY29t%2Ccolor_FFFFFF%2Cshadow_50%2Ct_80%2Cg_se%2Cx_10%2Cy_10)
+
+感知应用是否**存活**了：可能植物状态，虽然活着但是不能处理请求。
+
+应用是否**就绪**了：能响应请求，说明确实活的比较好。
+
+
+
+##### 3. SpringBoot 事件驱动开发
+
+**应用启动过程生命周期事件感知（9大事件）**、**应用运行中事件感知（无数种）**。
+
+- **事件发布**：`ApplicationEventPublisherAware`或`注入：ApplicationEventMulticaster`
+- **事件监听**：`组件 + @EventListener`
+
+![img](https://cdn.nlark.com/yuque/0/2023/png/1613913/1682327167479-8f634931-f8ca-48fb-9566-c914f1795ff2.png?x-oss-process=image%2Fwatermark%2Ctype_d3F5LW1pY3JvaGVp%2Csize_33%2Ctext_5bCa56GF6LC3IGF0Z3VpZ3UuY29t%2Ccolor_FFFFFF%2Cshadow_50%2Ct_80%2Cg_se%2Cx_10%2Cy_10)
+
+![img](https://cdn.nlark.com/yuque/0/2023/png/1613913/1682341921101-aa095a84-00cc-4815-b675-f4ed81cecf3b.png?x-oss-process=image%2Fwatermark%2Ctype_d3F5LW1pY3JvaGVp%2Csize_22%2Ctext_5bCa56GF6LC3IGF0Z3VpZ3UuY29t%2Ccolor_FFFFFF%2Cshadow_50%2Ct_80%2Cg_se%2Cx_10%2Cy_10)
+
+> 事件发布者
+
+```java
+@Service
+public class EventPublisher implements ApplicationEventPublisherAware {
+
+    /**
+     * 底层发送事件用的组件，SpringBoot会通过ApplicationEventPublisherAware接口自动注入给我们
+     * 事件是广播出去的。所有监听这个事件的监听器都可以收到
+     */
+    ApplicationEventPublisher applicationEventPublisher;
+
+    /**
+     * 所有事件都可以发
+     * @param event
+     */
+    public void sendEvent(ApplicationEvent event) {
+        //调用底层API发送事件
+        applicationEventPublisher.publishEvent(event);
+    }
+
+    /**
+     * 会被自动调用，把真正发事件的底层组组件给我们注入进来
+     * @param applicationEventPublisher event publisher to be used by this object
+     */
+    @Override
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+        this.applicationEventPublisher = applicationEventPublisher;
+    }
+}
+```
+
+> 事件订阅者
+
+```java
+@Service
+public class CouponService {
+
+    @Order(1)
+    @EventListener
+    public void onEvent(LoginSuccessEvent loginSuccessEvent){
+        System.out.println("===== CouponService ====感知到事件"+loginSuccessEvent);
+        UserEntity source = (UserEntity) loginSuccessEvent.getSource();
+        sendCoupon(source.getUsername());
+    }
+
+    public void sendCoupon(String username){
+        System.out.println(username + " 随机得到了一张优惠券");
+    }
+}
+```
+
+### 2. 自动配置原理
+
+#### 1. 入门理解
+
+应用关注的**三大核心**：**场景**、**配置**、**组件**
+
+##### 1. 自动配置流程
+
+![img](https://cdn.nlark.com/yuque/0/2023/png/1613913/1681829645812-0f0cad01-66d4-42fc-8111-091e33a062c6.png?x-oss-process=image%2Fwatermark%2Ctype_d3F5LW1pY3JvaGVp%2Csize_32%2Ctext_5bCa56GF6LC3IGF0Z3VpZ3UuY29t%2Ccolor_FFFFFF%2Cshadow_50%2Ct_80%2Cg_se%2Cx_10%2Cy_10)
+
+1. 导入`starter`
+2. 依赖导入`autoconfigure`
+3. 寻找类路径下 `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`文件
+4. 启动，加载所有 `自动配置类` `xxxAutoConfiguration`
+
+1. 1. 给容器中配置**功能**`组件`
+   2. `组件参数`绑定到 `属性类`中。`xxxProperties`
+   3. `属性类`和`配置文件`前缀项绑定
+   4. `@Contional派生的条件注解`进行判断**是否组件生效**
+
+1. 效果：
+
+1. 1. 修改配置文件，修改底层参数
+   2. 所有场景自动配置好直接使用
+   3. 可以注入SpringBoot配置好的组件随时使用
+
+
+
+##### 2. SPI机制
+
+- **Java中的SPI（Service Provider Interface）是一种软件设计模式，用于****在应用程序中动态地发现和加载组件****。****SPI的思想**是，定义一个接口或抽象类，然后通过在classpath中定义实现该接口的类来实现对组件的动态发现和加载。
+- SPI的主要目的是解决在应用程序中使用可插拔组件的问题。例如，一个应用程序可能需要使用不同的日志框架或数据库连接池，但是这些组件的选择可能取决于运行时的条件。通过使用SPI，应用程序可以在运行时发现并加载适当的组件，而无需在代码中硬编码这些组件的实现类。
+- 在Java中，**SPI**的实现方式是通过在`META-INF/services`目录下创建一个以服务接口全限定名为名字的文件，文件中包含实现该服务接口的类的全限定名。当应用程序启动时，Java的SPI机制会自动扫描classpath中的这些文件，并根据文件中指定的类名来加载实现类。
+- 通过使用SPI，应用程序可以实现更灵活、可扩展的架构，同时也可以避免硬编码依赖关系和增加代码的可维护性。
+
+以上回答来自`ChatGPT-3.5`
+
+
+
+在SpringBoot中，`META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`
+
+作业：写一段java的spi机制代码
+
+
+
+##### 3. 功能开关
+
+- 自动配置：全部都配置好，什么都不用管。   自动批量导入
+
+- - 项目一启动，spi文件中指定的所有都加载。
+
+- `@EnableXxxx`：手动控制哪些功能的开启； 手动导入。
+
+- - 开启xxx功能
+  - 都是利用 @Import 把此功能要用的组件导入进去
+
+
+
+
+
+#### 2. 进阶理解
+
+##### 1. @SpringBootApplication
+
+@SpringBootConfiguration
+
+就是： @Configuration ，容器中的组件，配置类。spring ioc启动就会加载创建这个类对象
+
+@EnableAutoConfiguration：开启自动配置
+
+开启自动配置
+
+@AutoConfigurationPackage：扫描主程序包：加载自己的组件
+
+- 利用 `@Import(AutoConfigurationPackages.Registrar.class)` 想要给容器中导入组件。
+- 把主程序所在的**包**的所有组件导入进来。
+- **为什么SpringBoot默认只扫描主程序所在的包及其子包**
+
+@Import(AutoConfigurationImportSelector.class)：加载所有自动配置类：加载starter导入的组件
+
+```java
+		List<String> configurations = ImportCandidates.load(AutoConfiguration.class, getBeanClassLoader())
+			.getCandidates();
+```
+
+> 扫描SPI文件：META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
+
+@ComponentScan
+
+> 组件扫描：排除一些组件（哪些不要）
+>
+> 排除前面已经扫描进来的`配置类`、和`自动配置类`。
+
+```java
+@ComponentScan(excludeFilters = { @Filter(type = FilterType.CUSTOM, classes = TypeExcludeFilter.class),
+      @Filter(type = FilterType.CUSTOM, classes = AutoConfigurationExcludeFilter.class) })
+```
+
+##### 2. 完整启动加载流程
+
+生命周期启动加载流程
+
+![img](https://cdn.nlark.com/yuque/0/2023/svg/1613913/1682569555020-b6cbc750-3171-44c6-810f-1c59e590b792.svg)
+
+
+
+### 3. 自定义starter
+
+> 场景：**抽取聊天机器人场景，它可以打招呼**。
+>
+> 效果：任何项目导入此`starter`都具有打招呼功能，并且**问候语**中的**人名**需要可以在**配置文件**中修改
+
+- 1. 创建`自定义starter`项目，引入`spring-boot-starter`基础依赖
+- 2. 编写模块功能，引入模块所有需要的依赖。
+- 3. 编写`xxxAutoConfiguration`自动配置类，帮其他项目导入这个模块需要的所有组件
+- 4. 编写配置文件`META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`指定启动需要加载的自动配置
+- 5. 其他项目引入即可使用
+
+
+
+
+
+#### 1. 业务代码
+
+> 自定义配置有提示。导入以下依赖重启项目，再写配置文件就有提示
+
+```java
+@ConfigurationProperties(prefix = "robot")  //此属性类和配置文件指定前缀绑定
+@Component
+@Data
+public class RobotProperties {
+
+    private String name;
+    private String age;
+    private String email;
+}
+
+```
+
+```xml
+<!--        导入配置处理器，配置文件自定义的properties配置都会有提示-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+```
+
+#### 2. 基本抽取
+
+- 创建starter项目，把公共代码需要的所有依赖导入
+- 把公共代码复制进来
+- 自己写一个 `RobotAutoConfiguration`，给容器中导入这个场景需要的所有组件
+
+- - 为什么这些组件默认不会扫描进去？
+  - **starter所在的包和 引入它的项目的主程序所在的包不是父子层级**
+
+- 别人引用这个`starter`，直接导入这个 `RobotAutoConfiguration`,就能把这个场景的组件导入进来
+- 功能生效。
+- 测试编写配置文件
+
+
+
+#### 3. 使用@EnableXxx机制
+
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
+@Documented
+@Import(RobotAutoConfiguration.class)
+public @interface EnableRobot {
+
+}
+```
+
+别人引入`starter`需要使用 `@EnableRobot`开启功能  
+
+#### 4. 完全自动配置
+
+- 依赖SpringBoot的SPI机制
+- META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports 文件中编写好我们自动配置类的全类名即可
+- 项目启动，自动加载我们的自动配置类
+
+------
+
+## 附录：SpringBoot3改变 & 新特性 快速总结
+
+1、自动配置包位置变化【参照视频：07、11】
+META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
+
+2、jakata api迁移
+**●**druid有问题
+
+3、新特性 - 函数式Web、ProblemDetails【参照视频：50、51】
+
+
+4、GraalVM 与 AOT【参照视频：86~93】
+
+5、响应式编程全套【第三季：预计7~8月份发布】
+
+6、剩下变化都是版本升级，意义不大
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
