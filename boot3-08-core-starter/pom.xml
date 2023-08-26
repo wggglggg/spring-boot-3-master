@@ -5,14 +5,14 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.1.2</version>
+        <version>3.1.3</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.sgg.springboot3</groupId>
-    <artifactId>boot3-03-logging</artifactId>
+    <artifactId>boot3-08-core-starter</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>boot3-03-logging</name>
-    <description>boot3-03-logging</description>
+    <name>boot3-08-core-starter</name>
+    <description>boot3-08-core-starter</description>
     <properties>
         <java.version>17</java.version>
     </properties>
@@ -23,16 +23,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-devtools</artifactId>
-            <scope>runtime</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
@@ -42,18 +32,11 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <!--引用自己写的starter-->
-<!--        <dependency>-->
-<!--            <groupId>com.sgg.springboot3</groupId>-->
-<!--            <artifactId>boot3-08-core-starter</artifactId>-->
-<!--            <version>0.0.1-SNAPSHOT</version>-->
-<!--        </dependency>-->
-
+        <!--自定义的starter properties 写properties时会自动提示-->
         <dependency>
-            <groupId>com.atguigu</groupId>
-            <artifactId>boot3-08-robot-starter</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 

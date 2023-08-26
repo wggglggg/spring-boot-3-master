@@ -1,6 +1,7 @@
-package com.sgg.springboot3.boot307core.event;
+package com.sgg.springboot3.boot307core.service;
 
 import com.sgg.springboot3.boot307core.bean.User;
+import com.sgg.springboot3.boot307core.event.LoginSuccessEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
