@@ -17,5 +17,13 @@
     <file url="file://$PROJECT_DIR$/boot3-08-robot-starter/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/boot3-09-redis/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/boot3-09-redis/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-10-2-crud-redis/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-10-crud-redis/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-10-crud-redis/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-10-crud/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-11-rpc/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-11-rpc/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-12-message/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-12-message/src/main/resources" charset="UTF-8" />
   </component>
 </project>

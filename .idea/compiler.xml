@@ -8,10 +8,15 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="boot3-09-redis" />
+        <module name="boot3-12-message" />
         <module name="boot3-04-web" />
-        <module name="boot3-05-ssm" />
+        <module name="boot3-10-2-crud-redis" />
         <module name="boot3-06-features" />
         <module name="boot3-08-core-starter" />
+        <module name="boot3-05-ssm" />
+        <module name="boot3-10-crud-redis" />
+        <module name="boot3-10-crud" />
+        <module name="boot3-11-rpc" />
         <module name="boot3-03-logging" />
         <module name="boot3-07-core" />
         <module name="boot3-02-demo" />
@@ -21,6 +26,7 @@
     <bytecodeTargetLevel>
       <module name="boot3-06-ssm2" target="17" />
       <module name="boot3-08-coretwo" target="17" />
+      <module name="boot3-10-crud-redis" target="17" />
       <module name="demo" target="17" />
       <module name="demo1" target="17" />
     </bytecodeTargetLevel>
@@ -39,6 +45,11 @@
       <module name="boot3-08-coretwo" options="-parameters" />
       <module name="boot3-08-robot-starter" options="-parameters" />
       <module name="boot3-09-redis" options="-parameters" />
+      <module name="boot3-10-2-crud-redis" options="-parameters" />
+      <module name="boot3-10-crud" options="-parameters" />
+      <module name="boot3-10-crud-redis" options="-parameters" />
+      <module name="boot3-11-rpc" options="-parameters" />
+      <module name="boot3-12-message" options="-parameters" />
       <module name="demo" options="-parameters" />
       <module name="demo1" options="-parameters" />
     </option>
