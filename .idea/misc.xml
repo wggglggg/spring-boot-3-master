@@ -21,6 +21,7 @@
         <option value="$PROJECT_DIR$/boot3-10-2-crud-redis/pom.xml" />
         <option value="$PROJECT_DIR$/boot3-11-rpc/pom.xml" />
         <option value="$PROJECT_DIR$/boot3-12-message/pom.xml" />
+        <option value="$PROJECT_DIR$/boot3-13-security/pom.xml" />
       </list>
     </option>
   </component>

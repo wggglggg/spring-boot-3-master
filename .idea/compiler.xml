@@ -9,6 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="boot3-09-redis" />
         <module name="boot3-12-message" />
+        <module name="boot3-13-security" />
         <module name="boot3-04-web" />
         <module name="boot3-10-2-crud-redis" />
         <module name="boot3-06-features" />
@@ -50,6 +51,7 @@
       <module name="boot3-10-crud-redis" options="-parameters" />
       <module name="boot3-11-rpc" options="-parameters" />
       <module name="boot3-12-message" options="-parameters" />
+      <module name="boot3-13-security" options="-parameters" />
       <module name="demo" options="-parameters" />
       <module name="demo1" options="-parameters" />
     </option>

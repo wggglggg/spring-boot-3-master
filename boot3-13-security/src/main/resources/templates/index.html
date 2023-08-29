@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>首页</title>
+    </head>
+    <body>
+
+        <a th:href="@{/hello}">hello</a> <br/>
+        <a th:href="@{/world}">go to the world</a>
+
+        <form th:action="@{/logout}" method="post">
+            <input type="submit" value="退出">
+        </form>
+    </body>
+</html>
