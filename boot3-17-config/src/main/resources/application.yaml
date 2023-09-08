@@ -1,0 +1,9 @@
+#CarConfig
+#carconfig:
+#  color: green
+#  seatNum: 4
+
+#TvConfig
+#tvconfig:
+#  brand: Hisenses
+#  inch: 65

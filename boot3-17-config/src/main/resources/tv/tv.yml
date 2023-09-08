@@ -1,0 +1,7 @@
+#TVConfig
+tv:
+  config:
+    brand: Haier
+    inch: 65
+
+

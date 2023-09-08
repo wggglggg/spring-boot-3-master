@@ -1,0 +1,16 @@
+# 测试环境mark
+#myapp:
+#  memo: Dev测试环境
+#
+## Redis
+#spring:
+#  config:
+#    activate:
+#      on-profile: dev
+#  data:
+#    redis:
+#      host: 192.168.123.121
+#      lettuce:
+#        pool:
+#          enabled: true
+#          max-active: 8

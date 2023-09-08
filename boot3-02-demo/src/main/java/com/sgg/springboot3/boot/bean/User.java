@@ -13,6 +13,8 @@ public class User {
     private String name;
     private String gender;
     private Integer age;
+    private String email;
+    private String phone;
 
     public Integer getId() {
         return id;
@@ -46,6 +48,22 @@ public class User {
         this.age = age;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -53,6 +71,8 @@ public class User {
                 ", name='" + name + '\'' +
                 ", gender='" + gender + '\'' +
                 ", age=" + age +
+                ", email='" + email + '\'' +
+                ", phone='" + phone + '\'' +
                 '}';
     }
 }

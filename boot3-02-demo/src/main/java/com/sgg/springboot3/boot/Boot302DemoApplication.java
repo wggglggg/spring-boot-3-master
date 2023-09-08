@@ -1,8 +1,9 @@
 package com.sgg.springboot3.boot;
 
-import com.alibaba.druid.FastsqlException;
-import com.sgg.springboot3.boot.bean.Car;
-import com.sgg.springboot3.boot.bean.User;
+
+
+
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -15,6 +16,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 //@SpringBootConfiguration
 //@EnableAutoConfiguration
 //@ComponentScan("com.sgg.springboot3.boot")
+@MapperScan(basePackages = "com.sgg.springboot3.boot.mapper")
 public class Boot302DemoApplication {
 
     public static void main(String[] args) {
@@ -38,8 +40,8 @@ public class Boot302DemoApplication {
 //
 //        System.out.println(chuliuxiang ==chuliuxiang2);     // true 单实例
 
-        Car car = (Car) ioc.getBean(Car.class);
-        System.out.println("car = " + car); //car = Car{id=1001, brand='BYD', color='red'}
+//        Car car = (Car) ioc.getBean(Car.class);
+//        System.out.println("car = " + car); //car = Car{id=1001, brand='BYD', color='red'}
 
     }
 

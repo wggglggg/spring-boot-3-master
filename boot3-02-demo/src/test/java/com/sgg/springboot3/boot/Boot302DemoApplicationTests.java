@@ -1,13 +1,22 @@
 package com.sgg.springboot3.boot;
 
-import org.junit.jupiter.api.Test;
+import com.sgg.springboot3.boot.config.AppConfig;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
 class Boot302DemoApplicationTests {
 
-    @Test
-    void contextLoads() {
-    }
+    @Autowired
+    private AppConfig appConfig;
+
+
+
+
+//    @Test
+//    void contextLoads() {
+//        appConfig.print();
+//    }
 
 }

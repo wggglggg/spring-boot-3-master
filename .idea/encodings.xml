@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding" native2AsciiForPropertiesFiles="true" defaultCharsetForPropertiesFiles="UTF-8">
+    <file url="file://$PROJECT_DIR$/Lession10-MyBatis/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Lession14-WebMvcConfig/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Lession14-WebMvcConfig/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/boot3-01-demo/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/boot3-01-demo/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/boot3-02-demo/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-02-demo/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/boot3-03-logging/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/boot3-03-logging/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/boot3-04-web/src/main/java" charset="UTF-8" />
@@ -27,5 +31,29 @@
     <file url="file://$PROJECT_DIR$/boot3-12-message/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/boot3-13-security/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/boot3-13-security/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-14-actuator/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-15-aot-common/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-15-aot-common/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-16-aot-springboot/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-16-aot-springboot/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-17-config/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-17-d/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-17-d/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-17-demo/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-17-demo2/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-18-aop/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-19-mybatis/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-20-transction/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-20-transction/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-21-ServletFilter/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-22-WebMvcConfig/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-23-UploadFiles/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-24-ExceptionHandler/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-24-ExceptionHandler/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-25-ProblemDetail/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-25-ProblemDetail/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-26-HttpExchange/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/boot3-26-HttpExchange/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/demo/src/main/java" charset="UTF-8" />
   </component>
 </project>

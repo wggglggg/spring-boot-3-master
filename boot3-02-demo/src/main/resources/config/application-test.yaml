@@ -1,0 +1,25 @@
+# 测试环境mark
+#myapp:
+#  memo: Test测试环境
+#
+#
+#spring:
+#  #指定环境名称
+#  config:
+#    activate:
+#      on-profile: test
+#  #数据库连接信息
+#  datasource:
+#    type: com.zaxxer.hikari.HikariDataSource
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    url: jdbc:mysql://192.168.123.122/ssm
+#    username: root
+#    password: abc123
+#
+##mapper
+#mybatis:
+#  #指定mapper映射文件位置
+#  mapper-locations: classpath:/com/sgg/springboot3/boot/mapper/*.xml
+#  #与bean实体类中变量与数据库字段名不一致，原因是Bean中是采用xxXXXX驼峰的方式命名，数据库采用xxx_xxx方式
+#  configuration:
+#    map-underscore-to-camel-case: true

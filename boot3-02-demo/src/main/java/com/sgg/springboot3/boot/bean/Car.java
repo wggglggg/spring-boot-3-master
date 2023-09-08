@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
  * @Version 1.0
  */
 
-@ConfigurationProperties(prefix = "car")   // 可以使用application.properties来设置值 比如car.color=red
+//@ConfigurationProperties(prefix = "car")   // 可以使用application.properties来设置值 比如car.color=red
 //@Component
 public class Car {
     private Integer id;

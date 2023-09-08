@@ -1,0 +1,10 @@
+#spring:
+#  #引入哪些配置文件
+#  config:
+#    import: config/application-dev.yaml, config/application-test.yaml
+#  # 激活哪一个配置
+#  profiles:
+#    active: dev
+#    active: test
+
+

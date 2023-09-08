@@ -1,0 +1,19 @@
+#DataSource
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.123.122:3306/blog
+    username: root
+    password: abc123
+    hikari:
+      allow-pool-suspension: true
+      maximum-pool-size: 20
+      auto-commit: true
+      connection-test-query: select 1
+#Mybatis
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+

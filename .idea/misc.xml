@@ -8,7 +8,6 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/boot3-01-demo/pom.xml" />
-        <option value="$PROJECT_DIR$/boot3-02-demo/pom.xml" />
         <option value="$PROJECT_DIR$/boot3-03-logging/pom.xml" />
         <option value="$PROJECT_DIR$/boot3-04-web/pom.xml" />
         <option value="$PROJECT_DIR$/boot3-05-ssm/pom.xml" />
@@ -22,10 +21,24 @@
         <option value="$PROJECT_DIR$/boot3-11-rpc/pom.xml" />
         <option value="$PROJECT_DIR$/boot3-12-message/pom.xml" />
         <option value="$PROJECT_DIR$/boot3-13-security/pom.xml" />
+        <option value="$PROJECT_DIR$/boot3-14-actuator/pom.xml" />
+        <option value="$PROJECT_DIR$/boot3-15-aot-common/pom.xml" />
+        <option value="$PROJECT_DIR$/boot3-16-aot-springboot/pom.xml" />
+        <option value="$PROJECT_DIR$/boot3-17-config/pom.xml" />
+        <option value="$PROJECT_DIR$/boot3-18-aop/pom.xml" />
+        <option value="$PROJECT_DIR$/boot3-02-demo/pom.xml" />
+        <option value="$PROJECT_DIR$/boot3-19-mybatis/pom.xml" />
+        <option value="$PROJECT_DIR$/boot3-20-transction/pom.xml" />
+        <option value="$PROJECT_DIR$/boot3-21-ServletFilter/pom.xml" />
+        <option value="$PROJECT_DIR$/boot3-22-WebMvcConfig/pom.xml" />
+        <option value="$PROJECT_DIR$/boot3-23-UploadFiles/pom.xml" />
+        <option value="$PROJECT_DIR$/boot3-24-ExceptionHandler/pom.xml" />
+        <option value="$PROJECT_DIR$/boot3-25-ProblemDetail/pom.xml" />
+        <option value="$PROJECT_DIR$/boot3-26-HttpExchange/pom.xml" />
       </list>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_17" default="true" project-jdk-name="17" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_17" default="true" project-jdk-name="graalvm-jdk-17.0.8" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
 </project>

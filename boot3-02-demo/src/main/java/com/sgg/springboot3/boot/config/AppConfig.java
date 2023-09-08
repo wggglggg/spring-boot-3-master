@@ -1,7 +1,8 @@
 package com.sgg.springboot3.boot.config;
 
-import com.alibaba.druid.FastsqlException;
+
 import com.sgg.springboot3.boot.bean.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -23,7 +24,7 @@ import java.io.File;
  * @Version 1.0
  */
 //@Import(FastsqlException.class)
-@EnableConfigurationProperties(Car.class)
+//@EnableConfigurationProperties(Car.class)
 //导入第三方写好的组件进行属性绑定
 //SpringBoot默认只扫描自己主程序所在的包。如果导入第三方包，即使组件上标注了 @Component、@ConfigurationProperties 注解，也没用。因为组件都扫描不进来
 //@ConditionalOnMissingClass(value="com.alibaba.druid.FastsqlException")
@@ -68,7 +69,14 @@ public class AppConfig {
 //    public Car car(){
 //        return new Car();
 //    }
-
+    
+//    @Value("${myapp.memo}")
+//    public String memo;
+//
+//    public void print(){
+//        System.out.println("memo = " + memo);
+//    }
+//
 
 
 }

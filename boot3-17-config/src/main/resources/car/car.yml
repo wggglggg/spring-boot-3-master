@@ -1,0 +1,4 @@
+#CarConfig
+carconfig:
+  color: green
+  seatNum: 4

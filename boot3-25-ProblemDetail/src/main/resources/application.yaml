@@ -1,0 +1,19 @@
+#Books
+product:
+  books:
+    - isbn: 9701
+      name: Springboot + Vue3大型前后端分享项目
+      author: 十三 尼克陈
+    - isbn: 2035
+      name: SSM+Springboot+Vue3全栈开发
+      author: 陈恒 李正光
+    - isbn: 2744
+      name: Vue.js设计与实现
+      author: 霍春阳
+
+
+spring:
+  mvc:
+    # 启动 RFC 7807 支持
+    problemdetails:
+      enabled: true

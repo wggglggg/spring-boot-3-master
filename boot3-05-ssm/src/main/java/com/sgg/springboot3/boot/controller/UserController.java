@@ -2,7 +2,6 @@ package com.sgg.springboot3.boot.controller;
 
 import com.sgg.springboot3.boot.bean.User;
 import com.sgg.springboot3.boot.mapper.UserMapper;
-import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

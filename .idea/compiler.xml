@@ -8,32 +8,53 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="boot3-09-redis" />
-        <module name="boot3-12-message" />
         <module name="boot3-13-security" />
-        <module name="boot3-04-web" />
-        <module name="boot3-10-2-crud-redis" />
+        <module name="boot3-23-UploadFiles" />
         <module name="boot3-06-features" />
         <module name="boot3-08-core-starter" />
+        <module name="boot3-18-aop" />
+        <module name="boot3-16-aot-springboot" />
         <module name="boot3-05-ssm" />
-        <module name="boot3-10-crud-redis" />
+        <module name="boot3-26-HttpExchange" />
         <module name="boot3-10-crud" />
-        <module name="boot3-11-rpc" />
         <module name="boot3-03-logging" />
         <module name="boot3-07-core" />
-        <module name="boot3-02-demo" />
         <module name="boot3-08-robot-starter" />
+        <module name="boot3-17-config" />
+        <module name="boot3-20-transction" />
+        <module name="boot3-12-message" />
+        <module name="boot3-22-WebMvcConfig" />
+        <module name="boot3-04-web" />
+        <module name="boot3-10-2-crud-redis" />
+        <module name="boot3-10-crud-redis" />
+        <module name="boot3-15-aot-common" />
+        <module name="boot3-19-mybatis" />
+        <module name="boot3-14-actuator" />
+        <module name="boot3-21-ServletFilter" />
+        <module name="boot3-24-ExceptionHandler" />
+        <module name="boot3-11-rpc" />
+        <module name="boot3-02-demo" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="boot3-06-ssm2" target="17" />
       <module name="boot3-08-coretwo" target="17" />
       <module name="boot3-10-crud-redis" target="17" />
+      <module name="boot3-15-aot-common.main" target="17" />
+      <module name="boot3-15-aot-common.test" target="17" />
+      <module name="boot3-17-d" target="17" />
+      <module name="boot3-17-demo" target="17" />
+      <module name="boot3-17-demo2" target="17" />
       <module name="demo" target="17" />
       <module name="demo1" target="17" />
+      <module name="Lession10-MyBatis" target="17" />
+      <module name="Lession14-WebMvcConfig" target="17" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="Lession10-MyBatis" options="-parameters" />
+      <module name="Lession14-WebMvcConfig" options="-parameters" />
       <module name="boot3-01-demo" options="-parameters" />
       <module name="boot3-02-demo" options="-parameters" />
       <module name="boot3-03-logging" options="-parameters" />
@@ -52,6 +73,22 @@
       <module name="boot3-11-rpc" options="-parameters" />
       <module name="boot3-12-message" options="-parameters" />
       <module name="boot3-13-security" options="-parameters" />
+      <module name="boot3-14-actuator" options="-parameters" />
+      <module name="boot3-15-aot-common" options="" />
+      <module name="boot3-16-aot-springboot" options="-parameters" />
+      <module name="boot3-17-config" options="-parameters" />
+      <module name="boot3-17-d" options="-parameters" />
+      <module name="boot3-17-demo" options="-parameters" />
+      <module name="boot3-17-demo2" options="-parameters" />
+      <module name="boot3-18-aop" options="-parameters" />
+      <module name="boot3-19-mybatis" options="-parameters" />
+      <module name="boot3-20-transction" options="-parameters" />
+      <module name="boot3-21-ServletFilter" options="-parameters" />
+      <module name="boot3-22-WebMvcConfig" options="-parameters" />
+      <module name="boot3-23-UploadFiles" options="-parameters" />
+      <module name="boot3-24-ExceptionHandler" options="-parameters" />
+      <module name="boot3-25-ProblemDetail" options="-parameters" />
+      <module name="boot3-26-HttpExchange" options="-parameters" />
       <module name="demo" options="-parameters" />
       <module name="demo1" options="-parameters" />
     </option>
