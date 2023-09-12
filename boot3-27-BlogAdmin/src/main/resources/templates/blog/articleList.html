@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>图书首页</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+<!--        <link rel="stylesheet" th:href="@{/css/index_work.css}">-->
+        <link rel="shortcut icon" th:href="@{/favicon.ico}" type="image/x-icon"/>
+
+    </head>
+    <body>
+        <div id="app"> <!-- 容器类 -->
+            <!-- 这里可以显示图书 -->
+            <table class="table table-bordered table-hover table-stride table-secondary">
+                <thead>
+                    <tr>
+                        <th colspan="8" class="text-center">文章区域</th>
+                    </tr>
+                    <tr>
+                        <th>选&nbsp;&nbsp;&nbsp;&nbsp;择</th>
+                        <th>序&nbsp;&nbsp;&nbsp;&nbsp;号</th>
+                        <th>标题</th>
+                        <th>副标题</th>
+                        <th>已&nbsp;读&nbsp;数</th>
+                        <th>发布时间</th>
+                        <th>最后修改时间</th>
+                        <th>操&nbsp;&nbsp;&nbsp;作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="article, artindex : ${articleList}">
+                        <td><input type="checkbox" th:value="${article.id}"></td>
+                        <td th:text="${artindex.index+1}"></td>
+                        <td th:text="${article.title}"></td>
+                        <td th:text="${article.summary}"></td>
+                        <td th:text="${article.readCount}"></td>
+                        <td th:text="${article.createTime}"></td>
+                        <td th:text="${article.updateTime}"></td>
+                        <!--                    <td><a th:href="@{/article/get(id=${article.id})}">编辑文章</a></td>-->
+                        <td>
+                            <button class="btn btn-secondary text-bg-warning"><a th:href="@{/article/get(id=${article.id})}">修改</a></button>
+
+                        </td>
+                    </tr>
+                    <tr >
+                        <td><button id="add" onclick="addArticle()">发布</button></td>
+                        <td><button id="del" onclick="delArticle()">删除</button></td>
+                        <td ><button id="view" onclick="overview()">概览</button></td>
+                    </tr>
+                </tbody>
+
+
+
+            </table>
+
+            <form id="frm" th:action="@{/view/addArticle}" method="get"></form>
+
+            <form id="delFrm" th:action="@{/article/remove}" method="post">
+                <input id="ids" type="hidden" name="ids" value="">
+            </form>
+
+
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.staticfile.org/vue/3.3.4/vue.global.js"></script>
+        <script src="https://cdn.staticfile.org/jquery/3.7.1/jquery.js"></script>
+        <script type="text/javascript">
+            /*新增文章*/
+            function addArticle() {
+                $("#frm").submit();
+            }
+            
+            /*删除文章*/
+            function delArticle() {
+                /*数组放勾选上的文章article*/
+                let ids = [];
+
+                $("input[type='checkbox']:checked").each((index, item) => {
+                    ids.push(item.value);
+                })
+
+                if (ids.length === 0){
+                    alert("没有文章被钩选");
+                    return;
+                }
+                $("#ids").val(ids);
+                $("#delFrm").submit();
+            }
+
+            function overview() {
+                let ids = [];
+
+                $("input[type='checkbox']:checked").each((index, item)  => {
+                    ids.push(item.value);
+                })
+
+                if (ids.length > 1){
+                    alert("选择一个文章查看")
+                }
+
+                $.get("../article/detail/overview", {id: ids[0]}, (data, status) => {
+                    alert(data);
+                })
+            }
+            
+            
+        </script>
+    </body>
+</html>

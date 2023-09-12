@@ -1,0 +1,21 @@
+#Server
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.123.122:3306/blog
+    username: root
+    password: abc123
+    hikari:
+      auto-commit: true
+      maximum-pool-size: 20
+      minimum-idle: 10
+      #获取连接时，检测语句
+      connection-test-query: select 1
+      #其他属性 hikari官方提供的优化参数
+      data-source-properties:
+        cachePreStmts: true
+        dataSource.cachePrepstmtst: true
+        dataSource.prepStmtCacheSize: 250
+        dataSource.prepStmtCacheSqlLimit: 2048
+        dataSource.useServerPrepStmts: true

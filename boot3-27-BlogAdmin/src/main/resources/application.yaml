@@ -1,0 +1,32 @@
+#Server
+server:
+  port: 8080
+
+#Spring
+spring:
+  config:
+    import: conf/db.yaml, conf/app-base.yaml
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    #测试时关掉缓存
+    cache: false
+  devtools:
+    livereload:
+      enabled: true
+    restart:
+      #设置开启热部署
+      enabled: true
+      #重启目录
+      additional-paths: src/mian/java
+      exclude: WEB-INF/**
+#      poll-interval: 1s  #默认1秒
+#      quiet-period: 1s
+#Mybatis
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+  mapper-locations: classpath:/mapper/**/*.xml
+
+

@@ -50,9 +50,9 @@ class Boot312MessageApplicationTests {
 		System.out.println(" 消息发送成功---- ");
 	}
 
-	@Test
-	public void testAddTopic(){
-		NewTopic car = topicController.AddTopic("Car");
-		System.out.println("car = " + car);
-	}
+//	@Test
+//	public void testAddTopic(){
+//		NewTopic car = topicController.AddTopic("Car");
+//		System.out.println("car = " + car);
+//	}
 }

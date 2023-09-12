@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1">
+        <title>BindException</title>
+        <link rel="shortcut icon" th:href="@{/favicon.ico}" type="image/x-icon">
+        <!-- 新 Bootstrap5 核心 CSS 文件 -->
+        <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.3/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body>
+        <section>
+            <div class="container">
+                <h2>error描述<small><mark>BindException</mark></small></h2>
+            </div>
+        </section>
+        <sectio>
+            <div class="container p-5 my-5 border">
+
+                <table class="table table-striped table-primary table-hover table-bordered">
+                    <thead>
+                    <tr>
+                        <th>字段</th>
+                        <th>error描述</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="error : ${errors}">
+                        <td th:text="${error.field}"></td>
+                        <td th:text="${error.defaultMessage}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </sectio>
+
+
+<!--  popper.min.js 用于弹窗、提示、下拉菜单 -->
+<!-- 最新的 Bootstrap5 核心 JavaScript 文件 --><
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.3/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

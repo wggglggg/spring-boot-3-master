@@ -1,0 +1,6 @@
+#ArticleProperties
+article:
+  #在首页top显示文单， 最低被阅读次数阀值
+  lowest-read-count: 0
+  #首页显示多少则文章数量
+  article-nums-on-top: 50
